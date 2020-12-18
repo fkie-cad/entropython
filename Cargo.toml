@@ -1,0 +1,14 @@
+[package]
+name = "entropython"
+version = "0.1.0"
+authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
+edition = "2018"
+
+[lib]
+name = "entropython"
+crate-type = ["cdylib"]
+
+[dependencies.pyo3]
+version = "0.12.4"
+features = ["extension-module"]
+
