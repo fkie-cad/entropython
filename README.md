@@ -4,17 +4,10 @@ A Python module for efficient calculation of Shannon byte entropy based on Rust.
 
 ## Installation
 
-For building the binary, [Rust](https://www.rust-lang.org/) needs to be installed.
-
-Run
+Just run
 ```shell
-cargo build --release
-mv target/release/libentropython.so entropython.so # The renaming is necessary for Python to find the module
-# Optional: Remove debug symbols from the binary to dramatically reduce its size.
-strip entropython.so
+pip install entropython
 ```
-
-The built `entropython.so` itself has no dependencies.
 
 ## Usage
 
@@ -25,3 +18,17 @@ bytes = 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonum
 print(shannon_entropy(bytes))
 print(metric_entropy(bytes))
 ```
+
+## Build from Source
+
+For building the binary from source, [Rust](https://www.rust-lang.org/) needs to be installed.
+
+Run
+```shell
+cargo build --release
+mv target/release/libentropython.so entropython.so # The renaming is necessary for Python to find the module
+# Optional: Remove debug symbols from the binary to dramatically reduce its size.
+strip entropython.so
+```
+
+The built `entropython.so` itself has no dependencies.
