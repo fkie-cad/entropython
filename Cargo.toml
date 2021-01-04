@@ -1,6 +1,6 @@
 [package]
 name = "entropython"
-version = "0.1.0"
+version = "1.0.0"
 authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
 edition = "2018"
 

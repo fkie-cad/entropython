@@ -1,6 +1,6 @@
 # entropython
 
-Efficient calculation of Shannon byte entropy based on Rust.
+A Python module for efficient calculation of Shannon byte entropy based on Rust.
 
 ## Installation
 
