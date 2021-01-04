@@ -1,8 +1,16 @@
 [package]
 name = "entropython"
-version = "1.0.0"
+version = "1.0.1"
 authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
 edition = "2018"
+description = "A Python module for efficient calculation of Shannon byte entropy based on Rust."
+readme = "README.md"
+homepage = "https://github.com/fkie-cad/entropython"
+repository =  "https://github.com/fkie-cad/entropython"
+license = "MIT"
+license-file = "LICENSE"
+keywords = ["shannon", "entropy"]
+
 
 [lib]
 name = "entropython"
