@@ -2,6 +2,12 @@ use pyo3::prelude::*;
 use pyo3::wrap_pyfunction;
 
 /// Compute the Shannon byte entropy of a byte array.
+///
+/// See https://en.wikipedia.org/wiki/Entropy_(information_theory)
+/// for more information about Shannon entropy.
+///
+/// :param bytes: The input byte array.
+/// :returns: The Shannon byte entropy of the input array.
 #[pyfunction]
 fn shannon_entropy(bytes: &[u8]) -> f64 {
     let mut byte_count = [0u64; 256];
@@ -20,11 +26,16 @@ fn shannon_entropy(bytes: &[u8]) -> f64 {
 /// Compute the metric entropy of a byte array.
 ///
 /// Metric entropy = Shannon entropy / 8
+///
+/// :param bytes: The input byte array.
+/// :returns: The Shannon byte entropy of the input array.
 #[pyfunction]
 fn metric_entropy(bytes: &[u8]) -> f64 {
     shannon_entropy(bytes) / 8f64
 }
 
+/// This module implements functions to compute the Shannon byte entropy of a byte array.
+/// The computation itself is implemented in Rust for faster runtime.
 #[pymodule]
 fn entropython(_py: Python, m: &PyModule) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(shannon_entropy, m)?)?;
