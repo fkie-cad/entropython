@@ -1,6 +1,6 @@
 [package]
 name = "entropython"
-version = "1.0.1"
+version = "1.0.2"
 authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
 edition = "2018"
 description = "A Python module for efficient calculation of Shannon byte entropy based on Rust."
@@ -17,6 +17,6 @@ name = "entropython"
 crate-type = ["cdylib"]
 
 [dependencies.pyo3]
-version = "0.12.4"
+version = "0.17.1"
 features = ["extension-module"]
 
