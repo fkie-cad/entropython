@@ -1,0 +1,19 @@
+[build-system]
+requires = [
+    "setuptools",
+    "setuptools-rust",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "entropython"
+version = "1.1.0"
+
+[tool.setuptools.packages]
+find = { where = ["python"] }
+
+[[tool.setuptools-rust.ext-modules]]
+target = "entropython.libentropython"
+path = "Cargo.toml"
+binding = "PyO3"
