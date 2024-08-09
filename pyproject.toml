@@ -10,6 +10,11 @@ build-backend = "setuptools.build_meta"
 name = "entropython"
 version = "1.1.0"
 
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+]
+
 [tool.setuptools.packages]
 find = { where = ["python"] }
 
