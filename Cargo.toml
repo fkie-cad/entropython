@@ -2,7 +2,7 @@
 name = "entropython"
 version = "1.1.0"
 authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
-edition = "2018"
+edition = "2021"
 description = "A Python module for efficient calculation of Shannon byte entropy based on Rust."
 readme = "README.md"
 homepage = "https://github.com/fkie-cad/entropython"
@@ -17,4 +17,4 @@ path = "rust/lib.rs"
 crate-type = ["cdylib"]
 
 [dependencies]
-pyo3 = { version = "0.17.1", features = ["extension-module"] }
+pyo3 = { version = "0.22.2", features = ["extension-module"] }
