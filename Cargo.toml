@@ -1,6 +1,6 @@
 [package]
 name = "entropython"
-version = "1.0.2"
+version = "1.1.0"
 authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
 edition = "2018"
 description = "A Python module for efficient calculation of Shannon byte entropy based on Rust."
@@ -11,12 +11,10 @@ license = "MIT"
 license-file = "LICENSE"
 keywords = ["shannon", "entropy"]
 
-
 [lib]
-name = "entropython"
+name = "libentropython"
+path = "rust/lib.rs"
 crate-type = ["cdylib"]
 
-[dependencies.pyo3]
-version = "0.17.1"
-features = ["extension-module"]
-
+[dependencies]
+pyo3 = { version = "0.17.1", features = ["extension-module"] }
