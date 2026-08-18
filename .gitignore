@@ -1,7 +1,10 @@
 *.egg-info
+*.pyd
+*.so
 .idea
 .vscode
 /target
 Cargo.lock
+__pycache__
 build
 dist

@@ -1,18 +1,18 @@
 [build-system]
 requires = [
-    "setuptools",
-    "setuptools-rust",
-    "wheel"
+    "setuptools>=80",
+    "setuptools-rust>=1.11",
+    "wheel>=0.45",
 ]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "entropython"
-version = "1.2.0"
+version = "1.2.1"
 readme = "README.md"
 description = "A Python module for efficient calculation of Shannon byte entropy based on Rust."
 license = {file = "LICENSE"}
-requires-python = ">= 3.8"
+requires-python = ">= 3.10"
 keywords = ["entropy"]
 
 [project.urls]
