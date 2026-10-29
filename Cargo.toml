@@ -1,15 +1,15 @@
 [package]
 name = "entropython"
-version = "1.2.2"
+version = "1.3.0"
 authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
 edition = "2021"
-description = "A Python module for efficient calculation of Shannon byte entropy based on Rust."
+description = "A Python module for efficient calculation of Shannon byte entropy and the chi-square statistic of the byte distribution based on Rust."
 readme = "README.md"
 homepage = "https://github.com/fkie-cad/entropython"
 repository =  "https://github.com/fkie-cad/entropython"
 license = "MIT"
 license-file = "LICENSE"
-keywords = ["shannon", "entropy"]
+keywords = ["shannon", "entropy", "chi-square", "randomness"]
 
 [lib]
 name = "libentropython"
