@@ -58,6 +58,96 @@ fn chi_square(bytes: &[u8]) -> f64 {
         .sum()
 }
 
+/// Compute the p-value of the chi-square test of a byte array against a uniform distribution.
+///
+/// The p-value is the probability that uniformly distributed data of the same length has a
+/// chi-square statistic at least as high as the input's (255 degrees of freedom). A value close
+/// to 0.0 means the bytes are not uniformly distributed (e.g. compressed data, given a large
+/// enough input). For uniform (e.g. encrypted or random) data, the p-value is itself uniformly
+/// distributed between 0.0 and 1.0, so a value close to 1.0 does not mean "more random".
+///
+/// :param bytes: The input byte array.
+/// :returns: The p-value of the input array (1.0 for an empty input).
+#[pyfunction]
+fn chi_square_p_value(bytes: &[u8]) -> f64 {
+    upper_regularized_gamma(255f64 / 2f64, chi_square(bytes) / 2f64)
+}
+
+const GAMMA_EPSILON: f64 = 1e-15;
+const GAMMA_MAX_ITERATIONS: usize = 1000;
+
+/// The regularized upper incomplete gamma function Q(a, x) = Γ(a, x) / Γ(a).
+/// The chi-square survival function with k degrees of freedom is Q(k / 2, x / 2).
+/// Uses a series for x < a + 1 and a continued fraction (modified Lentz) otherwise,
+/// see Numerical Recipes, chapter 6.2.
+fn upper_regularized_gamma(a: f64, x: f64) -> f64 {
+    if x <= 0f64 {
+        return 1f64;
+    }
+    let prefactor = (a * x.ln() - x - ln_gamma(a)).exp();
+    if x < a + 1f64 {
+        let mut term = 1f64 / a;
+        let mut sum = term;
+        for n in 1..GAMMA_MAX_ITERATIONS {
+            term *= x / (a + n as f64);
+            sum += term;
+            if term.abs() < sum.abs() * GAMMA_EPSILON {
+                break;
+            }
+        }
+        (1f64 - sum * prefactor).max(0f64)
+    } else {
+        let tiny = f64::MIN_POSITIVE / GAMMA_EPSILON;
+        let mut b = x + 1f64 - a;
+        let mut c = 1f64 / tiny;
+        let mut d = 1f64 / b;
+        let mut fraction = d;
+        for i in 1..GAMMA_MAX_ITERATIONS {
+            let an = -(i as f64) * (i as f64 - a);
+            b += 2f64;
+            d = an * d + b;
+            if d.abs() < tiny {
+                d = tiny;
+            }
+            c = b + an / c;
+            if c.abs() < tiny {
+                c = tiny;
+            }
+            d = 1f64 / d;
+            let delta = d * c;
+            fraction *= delta;
+            if (delta - 1f64).abs() < GAMMA_EPSILON {
+                break;
+            }
+        }
+        fraction * prefactor
+    }
+}
+
+/// ln(Γ(x)) for x > 0 with the Lanczos approximation (g = 7, n = 9).
+fn ln_gamma(x: f64) -> f64 {
+    const COEFFICIENTS: [f64; 9] = [
+        0.999_999_999_999_809_9,
+        676.520_368_121_885_1,
+        -1_259.139_216_722_402_8,
+        771.323_428_777_653_1,
+        -176.615_029_162_140_6,
+        12.507_343_278_686_905,
+        -0.138_571_095_265_720_12,
+        9.984_369_578_019_572e-6,
+        1.505_632_735_149_311_6e-7,
+    ];
+    let x = x - 1f64;
+    let t = x + 7.5f64;
+    let series: f64 = COEFFICIENTS[0]
+        + COEFFICIENTS[1..]
+            .iter()
+            .enumerate()
+            .map(|(i, c)| c / (x + i as f64 + 1f64))
+            .sum::<f64>();
+    0.5f64 * (2f64 * std::f64::consts::PI).ln() + (x + 0.5f64) * t.ln() - t + series.ln()
+}
+
 fn count_bytes(bytes: &[u8]) -> [u64; 256] {
     let mut byte_count = [0u64; 256];
     for byte in bytes {
@@ -73,6 +163,7 @@ fn libentropython(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(shannon_entropy, m)?)?;
     m.add_function(wrap_pyfunction!(metric_entropy, m)?)?;
     m.add_function(wrap_pyfunction!(chi_square, m)?)?;
+    m.add_function(wrap_pyfunction!(chi_square_p_value, m)?)?;
     Ok(())
 }
 
@@ -105,5 +196,38 @@ mod tests {
         // a single byte value: (n - n/256)² / (n/256) + 255 * n/256 = 255 * n
         let constant = [0u8; 1000];
         assert!((chi_square(&constant) - 255_000f64).abs() < 1e-6);
+    }
+
+    #[test]
+    fn ln_gamma_known_values() {
+        // Γ(n) = (n - 1)!, Γ(0.5) = √π
+        assert!((ln_gamma(1f64)).abs() < 1e-12);
+        assert!((ln_gamma(5f64) - 24f64.ln()).abs() < 1e-12);
+        assert!((ln_gamma(0.5f64) - std::f64::consts::PI.sqrt().ln()).abs() < 1e-12);
+    }
+
+    #[test]
+    fn chi_square_survival_function() {
+        // reference values: scipy.stats.chi2.sf(x, 255)
+        let cases = [
+            (0f64, 1f64),
+            (255f64, 0.48822252177040637),
+            (310.45738821990585, 0.01),
+            (330.51974363400586, 0.001),
+            (200f64, 0.9954254445419519),
+        ];
+        for (x, expected) in cases {
+            let p_value = upper_regularized_gamma(127.5f64, x / 2f64);
+            assert!((p_value - expected).abs() < 1e-10, "x = {x}: {p_value} != {expected}");
+        }
+        assert!(upper_regularized_gamma(127.5f64, 1e6f64) < 1e-300);
+    }
+
+    #[test]
+    fn chi_square_p_value_bounds() {
+        assert_eq!(chi_square_p_value(&[]), 1f64);
+        let uniform: Vec<u8> = (0..1024).map(|i| i as u8).collect();
+        assert_eq!(chi_square_p_value(&uniform), 1f64);
+        assert_eq!(chi_square_p_value(&[0u8; 1000]), 0f64);
     }
 }
