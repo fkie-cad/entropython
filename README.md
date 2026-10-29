@@ -42,4 +42,5 @@ is usually considerably higher (the difference is only reliable for larger input
 `chi_square_p_value` is the p-value of that test: the probability that uniformly distributed data has a chi-square
 statistic at least as high. A p-value below e.g. 0.01 means the data is very likely not uniformly distributed. For
 uniform data, the p-value is itself uniformly distributed between 0.0 and 1.0, so a high p-value does not mean
-"more random".
+"more random". For inputs shorter than 1280 bytes (5 expected occurrences per byte value), the p-value would overstate
+the non-uniformity, so `chi_square_p_value` returns `nan` instead.

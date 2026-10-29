@@ -66,12 +66,23 @@ fn chi_square(bytes: &[u8]) -> f64 {
 /// enough input). For uniform (e.g. encrypted or random) data, the p-value is itself uniformly
 /// distributed between 0.0 and 1.0, so a value close to 1.0 does not mean "more random".
 ///
+/// The p-value uses the chi-square distribution, which is only a good approximation if each
+/// byte value is expected at least 5 times. For shorter inputs (less than 1280 bytes), it would
+/// overstate the non-uniformity (e.g. 10% instead of 1% of random 8-byte inputs would have a
+/// p-value below 0.01), so the result is NaN instead.
+///
 /// :param bytes: The input byte array.
-/// :returns: The p-value of the input array (1.0 for an empty input).
+/// :returns: The p-value of the input array (NaN for inputs shorter than 1280 bytes).
 #[pyfunction]
 fn chi_square_p_value(bytes: &[u8]) -> f64 {
+    if bytes.len() < CHI_SQUARE_P_VALUE_MIN_LENGTH {
+        return f64::NAN;
+    }
     upper_regularized_gamma(255f64 / 2f64, chi_square(bytes) / 2f64)
 }
+
+/// 5 expected occurrences per byte value
+const CHI_SQUARE_P_VALUE_MIN_LENGTH: usize = 5 * 256;
 
 const GAMMA_EPSILON: f64 = 1e-15;
 const GAMMA_MAX_ITERATIONS: usize = 1000;
@@ -88,13 +99,16 @@ fn upper_regularized_gamma(a: f64, x: f64) -> f64 {
     if x < a + 1f64 {
         let mut term = 1f64 / a;
         let mut sum = term;
+        let mut converged = false;
         for n in 1..GAMMA_MAX_ITERATIONS {
             term *= x / (a + n as f64);
             sum += term;
             if term.abs() < sum.abs() * GAMMA_EPSILON {
+                converged = true;
                 break;
             }
         }
+        debug_assert!(converged, "gamma series did not converge for a = {a}, x = {x}");
         (1f64 - sum * prefactor).max(0f64)
     } else {
         let tiny = f64::MIN_POSITIVE / GAMMA_EPSILON;
@@ -102,6 +116,7 @@ fn upper_regularized_gamma(a: f64, x: f64) -> f64 {
         let mut c = 1f64 / tiny;
         let mut d = 1f64 / b;
         let mut fraction = d;
+        let mut converged = false;
         for i in 1..GAMMA_MAX_ITERATIONS {
             let an = -(i as f64) * (i as f64 - a);
             b += 2f64;
@@ -117,9 +132,11 @@ fn upper_regularized_gamma(a: f64, x: f64) -> f64 {
             let delta = d * c;
             fraction *= delta;
             if (delta - 1f64).abs() < GAMMA_EPSILON {
+                converged = true;
                 break;
             }
         }
+        debug_assert!(converged, "gamma continued fraction did not converge for a = {a}, x = {x}");
         fraction * prefactor
     }
 }
@@ -156,7 +173,8 @@ fn count_bytes(bytes: &[u8]) -> [u64; 256] {
     byte_count
 }
 
-/// This module implements functions to compute the Shannon byte entropy of a byte array.
+/// This module implements functions to compute the Shannon byte entropy of a byte array
+/// and the chi-square test of its byte distribution against a uniform distribution.
 /// The computation itself is implemented in Rust for faster runtime.
 #[pymodule(gil_used = false)]
 fn libentropython(m: &Bound<'_, PyModule>) -> PyResult<()> {
@@ -225,9 +243,16 @@ mod tests {
 
     #[test]
     fn chi_square_p_value_bounds() {
-        assert_eq!(chi_square_p_value(&[]), 1f64);
-        let uniform: Vec<u8> = (0..1024).map(|i| i as u8).collect();
+        let uniform: Vec<u8> = (0..1280).map(|i| i as u8).collect();
         assert_eq!(chi_square_p_value(&uniform), 1f64);
-        assert_eq!(chi_square_p_value(&[0u8; 1000]), 0f64);
+        assert_eq!(chi_square_p_value(&[0u8; 1280]), 0f64);
+    }
+
+    #[test]
+    fn chi_square_p_value_too_short() {
+        assert!(chi_square_p_value(&[]).is_nan());
+        assert!(chi_square_p_value(&[0u8; 8]).is_nan());
+        let uniform: Vec<u8> = (0..1279).map(|i| i as u8).collect();
+        assert!(chi_square_p_value(&uniform).is_nan());
     }
 }
