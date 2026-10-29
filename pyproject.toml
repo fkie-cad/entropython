@@ -8,7 +8,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "entropython"
-version = "1.3.0"
+version = "1.3.1"
 readme = "README.md"
 description = "A Python module for efficient calculation of Shannon byte entropy and the chi-square statistic of the byte distribution based on Rust."
 license = {file = "LICENSE"}
