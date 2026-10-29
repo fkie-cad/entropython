@@ -56,7 +56,7 @@ def test_chi_square_p_value(input_value, expected_output):
 
 
 def test_chi_square_p_value_random_vs_compressed():
-    # a p-value below 1e-6 for random data happens once in a million runs
-    assert chi_square_p_value(os.urandom(1_000_000)) > 1e-6
+    # a p-value below 1e-9 for random data happens once in a billion runs
+    assert chi_square_p_value(os.urandom(1_000_000)) > 1e-9
     compressed = zlib.compress(b"".join(b"%d: %d\n" % (i, i * i) for i in range(200_000)), 9)
-    assert chi_square_p_value(compressed) < 1e-6
+    assert chi_square_p_value(compressed) < 1e-9
