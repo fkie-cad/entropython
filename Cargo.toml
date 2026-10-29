@@ -1,6 +1,6 @@
 [package]
 name = "entropython"
-version = "1.2.0"
+version = "1.2.2"
 authors = ["Enkelmann <nils-edvin.enkelmann@fkie.fraunhofer.de>"]
 edition = "2021"
 description = "A Python module for efficient calculation of Shannon byte entropy based on Rust."

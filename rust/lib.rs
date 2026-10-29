@@ -36,7 +36,7 @@ fn metric_entropy(bytes: &[u8]) -> f64 {
 
 /// This module implements functions to compute the Shannon byte entropy of a byte array.
 /// The computation itself is implemented in Rust for faster runtime.
-#[pymodule]
+#[pymodule(gil_used = false)]
 fn libentropython(m: &Bound<'_, PyModule>) -> PyResult<()> {
     m.add_function(wrap_pyfunction!(shannon_entropy, m)?)?;
     m.add_function(wrap_pyfunction!(metric_entropy, m)?)?;
