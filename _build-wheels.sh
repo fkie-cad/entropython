@@ -15,7 +15,7 @@ if ! command -v rustc >/dev/null 2>&1; then
 fi
 export PATH="$CARGO_HOME/bin:$PATH"
 
-for PYBIN in /opt/python/cp{310,311,312,313,314}*/bin; do
+for PYBIN in /opt/python/cp{310,311,312,313,314,315}*/bin; do
     rm -rf /tmp/src && mkdir -p /tmp/src
     tar -C /io --exclude=dist --exclude=target --exclude=build \
         --exclude='*.egg-info' --exclude=__pycache__ --exclude='*.so' \
